@@ -120,7 +120,7 @@ static void InitializeDefaultCredentials()
 SslContext_t::SslContext_t
 **************************/
 
-SslContext_t::SslContext_t (bool is_server, const string &privkeyfile, const string &certchainfile):
+SslContext_t::SslContext_t (bool is_server, const string &privkeyfile, const string &certchainfile, const string &privkeystring, const string &certchainstring):
 	pCtx (NULL),
 	PrivateKey (NULL),
 	Certificate (NULL)
@@ -160,6 +160,8 @@ SslContext_t::SslContext_t (bool is_server, const string &privkeyfile, const str
 		int e;
 		if (privkeyfile.length() > 0)
 			e = SSL_CTX_use_PrivateKey_file (pCtx, privkeyfile.c_str(), SSL_FILETYPE_PEM);
+		else if (privkeystring.length() > 0)
+			e = SSL_CTX_use_PrivateKey (pCtx, privkeystring.c_str());
 		else
 			e = SSL_CTX_use_PrivateKey (pCtx, DefaultPrivateKey);
 		if (e <= 0) ERR_print_errors_fp(stderr);
@@ -167,6 +169,8 @@ SslContext_t::SslContext_t (bool is_server, const string &privkeyfile, const str
 
 		if (certchainfile.length() > 0)
 			e = SSL_CTX_use_certificate_chain_file (pCtx, certchainfile.c_str());
+		else if(certchainstring.length() > 0)
+			e = SSL_CTX_use_certificate (pCtx, certchainstring.c_str());
 		else
 			e = SSL_CTX_use_certificate (pCtx, DefaultCertificate);
 		if (e <= 0) ERR_print_errors_fp(stderr);
@@ -216,7 +220,7 @@ SslContext_t::~SslContext_t()
 SslBox_t::SslBox_t
 ******************/
 
-SslBox_t::SslBox_t (bool is_server, const string &privkeyfile, const string &certchainfile, bool verify_peer, const unsigned long binding):
+SslBox_t::SslBox_t (bool is_server, const string &privkeyfile, const string &certchainfile, bool verify_peer, const unsigned long binding, const string &privkeystring, const string &certchainstring):
 	bIsServer (is_server),
 	bHandshakeCompleted (false),
 	bVerifyPeer (verify_peer),
@@ -228,7 +232,7 @@ SslBox_t::SslBox_t (bool is_server, const string &privkeyfile, const string &cer
 	 * a new one every time we come here.
 	 */
 
-	Context = new SslContext_t (bIsServer, privkeyfile, certchainfile);
+	Context = new SslContext_t (bIsServer, privkeyfile, certchainfile, privkeystring, certchainstring);
 	assert (Context);
 
 	pbioRead = BIO_new (BIO_s_mem());

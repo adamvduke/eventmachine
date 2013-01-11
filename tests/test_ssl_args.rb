@@ -75,4 +75,14 @@ class TestSslArgs < Test::Unit::TestCase
       assert(false, 'should not have raised an exception')
     end
   end
+  
+  def test_tls_params_from_string
+    conn = EM::Connection.new('foo')
+    params = {:private_key_string => SSL_PRIV_KEY, :cert_chain_string => SSL_CHAIN}
+    begin
+      conn.start_tls params
+    rescue Exception
+      assert(false, 'should not have raised an exception')
+    end
+  end
 end if EM.ssl?
